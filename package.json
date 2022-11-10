@@ -1,0 +1,68 @@
+{
+  "name": "eshop-scraper",
+  "version": "1.2.3",
+  "description": "A simple package to get some data from a e-shop using web-scraping",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js",
+    "format": "prettier --write --ignore-path .gitignore README.md .",
+    "test": "jest",
+    "test:watch": "jest --watchAll",
+    "release": "np"
+  },
+  "babel": {
+    "env": {
+      "test": {
+        "plugins": [
+          "@babel/plugin-transform-modules-commonjs"
+        ]
+      }
+    }
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "all"
+  },
+  "bin": "./main.js",
+  "type": "module",
+  "engines": {
+    "node": ">=16.16.0",
+    "npm": ">=8.11.0"
+  },
+  "author": "Jubayer Islam",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.26.0",
+    "jsdom": "^19.0.0",
+    "lodash": "^4.17.21"
+  },
+  "bugs": {
+    "url": "https://github.com/GitPro10/eshop-scraper/issues"
+  },
+  "homepage": "https://github.com/GitPro10/eshop-scraper#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GitPro10/eshop-scraper.git"
+  },
+  "keywords": [
+    "price finder",
+    "web scrap",
+    "eshop",
+    "etsy",
+    "amazon",
+    "nintendo",
+    "walmart",
+    "price fetcher",
+    "data fetcher",
+    "website data fetcher",
+    "e-shop",
+    "price tracker"
+  ],
+  "devDependencies": {
+    "@babel/plugin-transform-modules-commonjs": "^7.17.7",
+    "jest": "^27.5.1",
+    "np": "^3.0.4",
+    "prettier": "^2.7.1"
+  }
+}
