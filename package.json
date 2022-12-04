@@ -5,19 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "node main.js",
-    "format": "prettier --write --ignore-path .gitignore README.md .",
-    "test": "jest",
-    "test:watch": "jest --watchAll",
-    "release": "np"
-  },
-  "babel": {
-    "env": {
-      "test": {
-        "plugins": [
-          "@babel/plugin-transform-modules-commonjs"
-        ]
-      }
-    }
+    "format": "prettier --write --ignore-path .gitignore README.md ."
   },
   "prettier": {
     "semi": false,
@@ -34,8 +22,7 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^0.26.0",
-    "jsdom": "^19.0.0",
-    "lodash": "^4.17.21"
+    "jsdom": "^20.0.2"
   },
   "bugs": {
     "url": "https://github.com/GitPro10/eshop-scraper/issues"
@@ -60,9 +47,6 @@
     "price tracker"
   ],
   "devDependencies": {
-    "@babel/plugin-transform-modules-commonjs": "^7.17.7",
-    "jest": "^27.5.1",
-    "np": "^3.0.4",
     "prettier": "^2.7.1"
   }
 }
