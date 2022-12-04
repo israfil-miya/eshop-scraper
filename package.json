@@ -1,6 +1,6 @@
 {
   "name": "eshop-scraper",
-  "version": "1.2.4",
+  "version": "1.3.0",
   "description": "A simple package to get some data from a e-shop using web-scraping",
   "main": "main.js",
   "scripts": {
