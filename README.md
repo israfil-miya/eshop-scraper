@@ -1,7 +1,6 @@
 # Eshop Scraper (eshop-scraper)
 
 **Eshop Scraper is a npm package.**
-
 ```console
 npm i eshop-scraper
 ```
@@ -32,24 +31,25 @@ const scraper = new eshop_scraper()
 
 ```js
 import eshop_scraper from 'eshop-scraper'
-const scraper = new eshop_scraper()(async () => {
-  let res = await scraper.getData('https://www.test.com/product/355223235')
+const scraper = new eshop_scraper();
 
-  console.log(res)
-})
+(async () => {
+    let res = await scraper.getData('https://www.test.com/product/355223235')
+    console.log(res)
+})()
 ```
 
 ## .getData()
 
-The method is used to scrape an website data that's entry is available in `_webprops`.
+The method is used to scrape an website data thats entry is available in `_webprops`.
 
 ### Parameter
 
-The method takes only one single parameter.<br/>
-Pass the link of the item you want to scrape inside the function.
+The method takes a single parameter.<br/>
+Pass the absolute uri of the item you want to scrape inside the function.
 
 ```js
-scraper.getData(link)
+scraper.getData(uri)
 ```
 
 ### Output
@@ -70,11 +70,11 @@ Sample output:
 
 ## Config
 
-Pass new configs inside the class to config some extra things. It's optional because some common configs already included in the scraper to use without any problem.
+Pass new configs inside the class to config some extra things. It's optional because some common configs are already included in the scraper to use without any configuration.
 
 ### Insert new entries
 
-You can insert new entries in the scraper, then you can scrape items from that website just like default entries.
+You can insert new entries in the scraper, then you can scrape items from that website just like the default entries.
 
 ```js
 import eshop_scraper from 'eshop-scraper'
@@ -82,9 +82,8 @@ import eshop_scraper from 'eshop-scraper'
 // create a map with new entries
 const propsList = new Map([
   [
-    'test.com',
+    'test.com', // website's domain or subdomain
     {
-      // website's domain or subdomain
       site: 'Test', // website's name
       selector: {
         price: ['span[itemprop="price"]'], // items's price html selector
@@ -131,12 +130,8 @@ import eshop_scraper from 'eshop-scraper'
 
 // create a map with new currencies
 const currencyList = new Map([
-  [
-    '$',
-    'USD',
-    ['euro', '€'],
-    'EUR', // to map multiple strings to one currency put the strings inside an array
-  ],
+    ['$', 'USD'],
+    [['euro', '€'], 'EUR'], // to map multiple strings to one currency put the strings inside an array
   // follow the same structure and add many more currencies, inside the map
 ])
 
@@ -149,7 +144,7 @@ const scraper = new eshop_scraper(config)
 
 ### Insert new set of headers
 
-To make scraper looks realistic and prevent the website from blocking the ip, realistic headers needed to be set.
+To make the scraper look realistic and prevent the website from blocking the ip, realistic headers are need to be set.
 
 ```js
 import eshop_scraper from 'eshop-scraper'
@@ -197,19 +192,22 @@ Use these only to check default valuess, directly replacing values with new valu
 
 ```js
 import eshop_scraper from 'eshop-scraper'
-const scraper = new eshop_scraper()(async () => {
+const scraper = new eshop_scraper();
+(async () => {
   let defProps = scraper._webprops // default supported websites
   let defReplaceStrings = scraper._replaceobj // default replaced strings
   let defHeaders = scraper._headers // default set of headers
   let defTimeout = scraper._timeoutAmount // default timeout amount
   let defCurrencyMap = scraper._currencymap // default currency map
 
-  console.log(defProps)
-  console.log(defReplaceStrings)
-  console.log(defHeaders)
-  console.log(defTimeout)
-  console.log(defCurrencyMap)
-})
+  console.log("Supported websites:", defProps, "\n")
+  console.log("Replaced strings:", defReplaceStrings, "\n")
+  console.log("Headers:", defHeaders, "\n")
+  console.log("Currency map:", defCurrencyMap, "\n")
+  console.log("Timeout amount:", defTimeout, "\n")
+
+  process.exit(0)
+})()
 ```
 
 ## Supported websites

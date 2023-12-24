@@ -139,8 +139,8 @@ export const websiles_props = new Map([
     {
       site: 'E-Bay',
       selector: {
-        price: ['div.display-price', 'span[itemprop="price"]'],
-        name: ['h1.product-title', 'h1.x-item-title__mainTitle'],
+        price: ['p.wt-text-title-01 span[aria-hidden="true"]'],
+        name: ['p.anchored-listing-title.wt-text-title-02'],
       },
     },
   ],
@@ -169,7 +169,7 @@ export const websiles_props = new Map([
     {
       site: 'Flipkart',
       selector: {
-        price: ['div._25b18c div._30jeq3 '],
+        price: ['div._25b18c div._30jeq3'],
         name: ['h1.yhB1nd span'],
       },
     },
@@ -179,8 +179,14 @@ export const websiles_props = new Map([
     {
       site: 'Etsy',
       selector: {
-        price: ['p.wt-text-title-03'],
-        name: ['h1.wt-text-body-03'],
+        price: [
+          'div.wt-grid__item-xs-7 div.n-listing-card__price p',
+          'div[data-selector="price-only"]',
+        ],
+        name: [
+          'p.anchored-listing-title a',
+          'h1[data-buy-box-listing-title="true"]',
+        ],
       },
     },
   ],
