@@ -1,4 +1,4 @@
-import { ReplaceMap, DOM, KeyValPair, SiteProps, WebProps } from './types';
+import { ReplaceMap, DOM, SiteProps, WebsitesProps } from './types';
 
 import { AxiosRequestHeaders } from 'axios';
 
@@ -16,36 +16,22 @@ String.prototype.allReplace = function (obj: ReplaceMap): string {
   return retStr;
 };
 
-const mapReducer = (
-  arr: KeyValPair[],
-  [keys, val]: KeyValPair,
-): KeyValPair[] => [
-  ...arr,
-  ...(Array.isArray(keys)
-    ? keys.map(key => [key, val] as KeyValPair)
-    : [[keys, val] as KeyValPair]),
-];
-
 const currencySeparated = (arr: (string | number)[]): string => {
-  const arr2: (string | number)[] = [];
-  for (let i = 0; i < arr.length; i++) {
-    if (isNaN(parseFloat(arr[i].toString()))) {
-      arr2.push(arr[i]);
-      break;
+  for (const item of arr) {
+    if (item !== undefined && isNaN(parseFloat(item.toString()))) {
+      return item.toString();
     }
   }
-  return arr2.toString();
+  return ''; // Return an empty string if no currency is found
 };
 
 const priceSeparated = (arr: (string | number)[]): number => {
-  const arr2: (string | number)[] = [];
-  for (let i = 0; i < arr.length; i++) {
-    if (!isNaN(parseFloat(arr[i].toString()))) {
-      arr2.push(arr[i]);
-      break;
+  for (const item of arr) {
+    if (item !== undefined && !isNaN(parseFloat(item.toString()))) {
+      return parseFloat(item.toString());
     }
   }
-  return parseFloat(arr2[0].toString());
+  return 0; // Return 0 if no price is found
 };
 
 export const $ = (dom: DOM, selector: string): HTMLElement | null =>
@@ -76,7 +62,7 @@ export const setCurrency = (
   return undefined; // Return undefined if no match is found
 };
 
-export const mergeMaps = <K extends any[], V>(
+export const mergeMaps = <K extends string[] | string, V>(
   map1: Map<K, V>,
   map2: Map<K, V>,
 ): Map<K, V> => {
@@ -92,8 +78,8 @@ export const mergeMaps = <K extends any[], V>(
 
 export const siteProps = (
   link: string,
-  webprops: WebProps,
-): SiteProps | { IsError: boolean; ErrorMsg: string } => {
+  webprops: WebsitesProps,
+): SiteProps | { isError: boolean; errorMsg: string } => {
   try {
     const webdomain = link.replace('www.', '').split('/')[2].trim();
     const prop = webprops.get(webdomain);
@@ -116,8 +102,8 @@ export const siteProps = (
     };
   } catch (err: Error | unknown) {
     return {
-      IsError: true,
-      ErrorMsg: (err as Error).message,
+      isError: true,
+      errorMsg: (err as Error).message,
     };
   }
 };
@@ -141,9 +127,9 @@ export const separator = (
 };
 
 export const isErrorProps = (
-  data: SiteProps | { IsError: boolean; ErrorMsg: string },
-): data is { IsError: boolean; ErrorMsg: string } => {
-  return (data as { IsError: boolean; ErrorMsg: string }).IsError !== undefined;
+  data: SiteProps | { isError: boolean; errorMsg: string },
+): data is { isError: boolean; errorMsg: string } => {
+  return (data as { isError: boolean; errorMsg: string }).isError !== undefined;
 };
 
 export const convertMapToArrayKeys = (

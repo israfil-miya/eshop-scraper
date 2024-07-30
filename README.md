@@ -1,247 +1,231 @@
 # Eshop Scraper (eshop-scraper)
 
-**Eshop Scraper is a npm package.**
+**Eshop Scraper is a powerful npm package designed for web scraping e-commerce websites.**
 
-```console
-npm i eshop-scraper
+## Installation
+
+To install the package, use one of the following commands:
+
+```sh
+npm install eshop-scraper
+```
+```sh
+pnpm add eshop-scraper
+```
+```sh
+yarn add eshop-scraper
 ```
 
-## What it does (in short)
+## What it does
 
-This package can be used for getting some important data like **price, currency, name** from various famous e-commerce websites like **Amazon, Steam, Walmart etc.**
-
+This package allows you to extract important data such as **price, currency, and name** from various well-known e-commerce websites, including **Amazon, Steam, Ebay**, and many others. It facilitates efficient web scraping for obtaining detailed product information.
 ## Support
 
 ```json
 {
-  "node": ">=16.16.0",
-  "npm": ">=8.11.0"
+  "node": ">=20.11.0",
+  "npm": ">=10.2.4",
 }
 ```
 
 ## Getting Started
 
-### Create a instance of eshop-scraper class
+### Create an Instance of `EshopScraper`
+First, you need to create an instance of the `EshopScraper` class. Configure it with optional parameters as needed:
 
-```js
-import eshop_scraper from 'eshop-scraper';
-const scraper = new eshop_scraper();
+```ts
+import { EshopScraper, ResultData } from 'eshop-scraper';
+
+const scraper: EshopScraper = new EshopScraper({
+  timeout: 15, // Timeout for requests in seconds
+  // Additional configuration options
+});
 ```
 
-### Use `.getData()` method of the class to scrape
+### Use `.getData()` Method to Scrape Data
+Call the `.getData()` method to scrape data from the provided URL:
 
-```js
-import eshop_scraper from 'eshop-scraper';
-const scraper = new eshop_scraper();
+```ts
+import { EshopScraper, ResultData } from 'eshop-scraper';
+
+const scraper = new EshopScraper({
+  timeout: 15,
+});
 
 (async () => {
-  let res = await scraper.getData('https://www.test.com/product/355223235');
-  console.log(res);
+  try {
+    const result: ResultData = await scraper.getData('https://example.com/product-page');
+    
+    if (result.isError) {
+      console.error('Error:', result.errorMsg);
+    } else {
+      console.log('Product Data:', result);
+    }
+  } catch (error) {
+    console.error('Unexpected Error:', error);
+  }
 })();
 ```
 
-## .getData()
+### `.getData()`
+This method scrapes data from a website based on the provided configuration.
 
-The method is used to scrape an website data thats entry is available in `_webprops`.
+### Parameters
+The method takes a single parameter:
+- `link` (string): The absolute URI of the item you want to scrape.
 
-### Parameter
-
-The method takes a single parameter.<br/>
-Pass the absolute uri of the item you want to scrape inside the function.
-
-```js
-scraper.getData(uri);
+```ts
+await scraper.getData(uri);
 ```
 
 ### Output
+It returns a Promise that resolves to an object with the following structure:
 
-It will will output a promise. Use _async/await_ to handle the output.<br/>
-
-Sample output:
-
-```js
+```ts
 {
-  price: 140.36,
-  currency: 'USD',
-  name: 'Test Item',
-  site: 'Test',
-  link: 'https://www.test.com/product/355223235'
+  price?: number; // The price of the product
+  currency?: string; // The currency of the price
+  name?: string; // The name of the product
+  site?: string; // The source website's name
+  link?: string; // The link to the product page
+  isError?: boolean; // Whether an error occurred
+  errorMsg?: string; // The error message, if any
 }
 ```
 
-## Config
+## Configuration
+You can customize the scraper by providing additional configurations.
 
-Pass new configs inside the class to config some extra things. It's optional because some common configs are already included in the scraper to use without any configuration.
+### Insert New Entries
+Add new website configurations to the scraper:
 
-### Insert new entries
+```ts
+import { EshopScraper } from 'eshop-scraper';
 
-You can insert new entries in the scraper, then you can scrape items from that website just like the default entries.
-
-```js
-import eshop_scraper from 'eshop-scraper';
-
-// create a map with new entries
 const propsList = new Map([
-  [
-    'test.com', // website's domain or subdomain
-    {
-      site: 'Test', // website's name
-      selector: {
-        price: ['span[itemprop="price"]'], // items's price html selector
-        name: ['h1[itemprop="name"]'], // items's name html selector
-      },
+  ['test.com', {
+    site: 'Test',
+    selectors: {
+      priceSelector: ['span[itemprop="price"]'],
+      nameSelector: ['h1[itemprop="name"]'],
     },
-  ],
-  // follow the same structure and add many more sites, inside the map
+  }],
 ]);
 
-const config = {
-  webprops: propsList, // pass a map with new entries in webprops
-};
-
-const scraper = new eshop_scraper(config);
+const scraper = new EshopScraper({
+  webProps: propsList,
+});
 ```
 
-### Replace or exclude extra things
+### Replace or Exclude Strings
+Modify or exclude certain strings in the scraped data:
 
-Exclude extra things to make the scraper work. The scraper needs to get a string like "\$50.30" or "USD 40" or "30 \$" from the price selector.
+```ts
+import { EshopScraper } from 'eshop-scraper';
 
-```js
-import eshop_scraper from 'eshop-scraper';
-
-const obj = {
-  'price is:': '', // pass empty string to exclude
+const replaceObj = {
+  'price is:': '',
   now: '',
-  usd: '$', // replace one string with another
+  usd: '$',
 };
 
-const config = {
-  replaceobj: obj, // pass an object in replaceobj
-};
-
-const scraper = new eshop_scraper(config);
+const scraper = new EshopScraper({
+  replaceObj: replaceObj,
+});
 ```
 
-### Insert new currencies
+### Insert New Currencies
+Map additional currencies for accurate conversion:
 
-Some websites may show prices in bitcoin or some unknown currency, to show them in proper way you need to map them. Otherwise you will get `undefined` in `currency` output.
+```ts
+import { EshopScraper } from 'eshop-scraper';
 
-```js
-import eshop_scraper from 'eshop-scraper';
-
-// create a map with new currencies
 const currencyList = new Map([
-  ['$', 'USD'],
-  [['euro', '€'], 'EUR'], // to map multiple strings to one currency put the strings inside an array
-  // follow the same structure and add many more currencies, inside the map
+  [['$'], 'USD'],
+  [['euro', '€'], 'EUR'],
 ]);
 
-const config = {
-  currencymap: currencyList, // pass a map with new currency entries in currencymap
-};
-
-const scraper = new eshop_scraper(config);
+const scraper = new EshopScraper({
+  currencyMap: currencyList,
+});
 ```
 
-### Insert new set of headers
+### Insert New Set of Headers
+Provide custom headers to mimic realistic browser requests:
 
-To make the scraper look realistic and prevent the website from blocking the ip, realistic headers are need to be set.
+```ts
+import { EshopScraper } from 'eshop-scraper';
 
-```js
-import eshop_scraper from 'eshop-scraper';
-
-const newheaders = [
+const newHeaders = [
   {
-    Accept:
-      'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-    'User-Agent':
-      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36',
+    Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36',
   },
   {
-    Accept:
-      'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-    'User-Agent':
-      'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:90.0) Gecko/20100101 Firefox/90.0',
+    Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:90.0) Gecko/20100101 Firefox/90.0',
   },
-  // add many more headers inside the array
 ];
 
-const config = {
-  headersarr: newheaders, // pass a arrray with new set of headers in headersarr
-};
-
-const scraper = new eshop_scraper(config);
+const scraper = new EshopScraper({
+  headersArr: newHeaders,
+});
 ```
 
-### Set timeout
+### Set Timeout
+Configure the request timeout:
 
-If the request takes longer time than the set amount of time and the website doesn't response within that time then the request will be cancelled.
+```ts
+import { EshopScraper } from 'eshop-scraper';
 
-```js
-import eshop_scraper from 'eshop-scraper';
-
-const config = {
-  timeout: 10, // pass an integer in timeout (counted as second)
-};
-
-const scraper = new eshop_scraper(config);
+const scraper = new EshopScraper({
+  timeout: 10, // Timeout in seconds
+});
 ```
 
-## Check default values
-
-Use these only to check default valuess, directly replacing values with new values not recommended.
+## Check Default Values
+Use this script to inspect default values for supported websites, replaced strings, headers, and more:
 
 ```js
-import eshop_scraper from 'eshop-scraper';
-const scraper = new eshop_scraper();
+import { EshopScraper } from 'eshop-scraper';
+
+const scraper = new EshopScraper();
+
 (async () => {
-  let defProps = scraper._webprops; // default supported websites
-  let defReplaceStrings = scraper._replaceobj; // default replaced strings
-  let defHeaders = scraper._headers; // default set of headers
-  let defTimeout = scraper._timeoutAmount; // default timeout amount
-  let defCurrencyMap = scraper._currencymap; // default currency map
-
-  console.log('Supported websites:', defProps, '\n');
-  console.log('Replaced strings:', defReplaceStrings, '\n');
-  console.log('Headers:', defHeaders, '\n');
-  console.log('Currency map:', defCurrencyMap, '\n');
-  console.log('Timeout amount:', defTimeout, '\n');
+  console.log('Supported websites:', scraper._webprops);
+  console.log('Replaced strings:', scraper._replaceobj);
+  console.log('Headers:', scraper._headers);
+  console.log('Currency map:', scraper._currencymap);
+  console.log('Timeout amount:', scraper._timeoutAmount);
 
   process.exit(0);
 })();
+
 ```
 
-## Supported websites
+## Supported Websites
 
-It supports **12** websites by default and more can be added very easily.
+The `eshop-scraper` package supports **8** websites by default. Additional websites can be added through configuration.
 
-### Websites list
+### Default Supported Websites
 
-1. Steam (store.steampowered.com)
-2. Amazon (amazon.com, amazon.in)
-3. Walmart (walmart.com)
-4. Crutchfield (crutchfield.com)
-5. Playstation (store.playstation.com, gear.playstation.com, direct.playstation.com)
-6. Rakuten (fr.shopping.rakuten.com)
-7. Ebay (ebay.com)
-8. Ebags (ebags.com)
-9. Bikroy (bikroy.com)
-10. Flipkart (flipkart.com)
-11. Etsy (etsy.com)
-12. Avito (avito.ru)
+1. **Steam** (store.steampowered.com)
+2. **Amazon** (amazon.com, amazon.in)
+3. **Crutchfield** (crutchfield.com)
+4. **Playstation** (store.playstation.com, gear.playstation.com)
+5. **Ebay** (ebay.com)
+6. **Bikroy** (bikroy.com)
 
 ## Note
 
-Some websites may show unexpected result. Because all websites doesn't support the same way of scraping. Also this scraper is made for static websites. Dynamic / Single Page websites won't work with this scraper. Those will be supported in future version of this scraper.
-<br/>
+### Limitations
 
-Some websites may show prices like "2345" instead of "23.45" because those websites initially shows the price without any dot or shows with a comma and later dynamically changed with a dot, as comma is excluded by the scraper and the scraper can't execute javascript while scraping, that's why the price is shown as "2345".
-<br/>
+- **Static vs. Dynamic Websites**: This scraper is designed for static websites. It does not support dynamic or Single Page Applications (SPAs) at this time. Future versions may include support for dynamic content.
 
-Some websites shows price in local language. The scraper processes the price that's got from the website and it only understands English. So the price has to be in English. Otherwise it will return `NaN` in price output and `undefined` in currency output.
+- **Price Format Issues**: Some websites might display prices in an unexpected format. For instance, prices may initially appear without a decimal point or use a comma instead of a dot. The scraper cannot execute JavaScript, so it cannot dynamically convert these formats. As a result, prices may be shown incorrectly (e.g., "2345" instead of "23.45").
+
+- **Language and Currency**: The scraper processes prices in English. If a website displays prices in a local language or script, the scraper might not interpret them correctly. Ensure that the price format is in English for accurate results.
 
 ## Contribute
 
-Contribute in the project by opening a pull request on github. Contributions are welcomed!
-
-**<p align="center">Proudly Made In Bangladesh 🇧🇩</p>**
+We welcome contributions to the `eshop-scraper` project! To contribute, please open a pull request on [GitHub](https://github.com/israfil-miya/eshop-scraper/pulls). Your input helps improve the scraper for everyone.

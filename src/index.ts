@@ -1,3 +1,10 @@
 export * from './main';
 
-export * from './types';
+export {
+  SiteProps,
+  WebsitesProps,
+  EshopScraperOptions,
+  ResultData,
+  Data,
+  Error,
+} from './types';

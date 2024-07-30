@@ -5,7 +5,6 @@ const ReplaceStringMapping: { [key: string]: string } = {
   now: '',
   freetoplay: '0',
   free: '0',
-  засутки: '',
   '/ea': '',
 };
 

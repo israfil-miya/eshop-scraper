@@ -20,70 +20,75 @@ import currencyLookupMapping from './configs/currency_lookup';
 
 import {
   ReplaceMap,
-  WebProps,
+  WebsitesProps,
   EshopScraperOptions,
-  GetDataResult,
+  ResultData,
 } from './types';
 
 const abortController: AbortController = new AbortController();
 
 export class EshopScraper {
-  private _timeoutAmount: number;
-  private _timeout: NodeJS.Timeout;
-  private _webprops: WebProps;
-  private _replaceobj: ReplaceMap;
-  private _currencymap: Map<string[], string>;
-  private _headers: { [key: string]: string }[];
+  readonly _timeoutAmount: number;
+  readonly _timeout: NodeJS.Timeout;
+  readonly _webProps: WebsitesProps;
+  readonly _replaceObj: ReplaceMap;
+  readonly _currencyMap: Map<string[], string>;
+  readonly _headers: { [key: string]: string }[];
 
   // Constructor
   constructor({
     timeout = 10,
-    webprops,
-    replaceobj,
-    currencymap,
-    headersarr = randomHeaders, // Default to randomHeaders if none provided
+    webProps,
+    replaceObj,
+    currencyMap,
+    headersArr = randomHeaders, // Default to randomHeaders if none provided
   }: EshopScraperOptions = {}) {
     this._timeoutAmount = timeout * 1000;
     this._timeout = setTimeout(() => {
       abortController.abort();
     }, this._timeoutAmount);
 
-    this._webprops =
-      webprops instanceof Map
-        ? mergeMaps(websitesProps, webprops)
+    this._webProps =
+      webProps instanceof Map
+        ? mergeMaps(websitesProps, webProps)
         : websitesProps;
 
-    this._replaceobj = replaceobj
-      ? { ...replaceString, ...replaceobj }
+    this._replaceObj = replaceObj
+      ? { ...replaceString, ...replaceObj }
       : replaceString;
 
     // Convert currencymap to Map<string[], string> if it's Map<string, string>
     const processedCurrencymap =
-      currencymap instanceof Map
-        ? (currencymap as Map<string, string>).size > 0 &&
-          typeof Array.from(currencymap.keys())[0] === 'string'
-          ? convertMapToArrayKeys(currencymap as Map<string, string>)
-          : currencymap
+      currencyMap instanceof Map
+        ? (currencyMap as Map<string, string>).size > 0 &&
+          typeof Array.from(currencyMap.keys())[0] === 'string'
+          ? convertMapToArrayKeys(currencyMap as Map<string, string>)
+          : currencyMap
         : currencyLookupMapping;
 
     // Ensure currencymap is of type Map<string[], string>
-    this._currencymap = mergeMaps<string[], string>(
+    this._currencyMap = mergeMaps<string[], string>(
       currencyLookupMapping,
       processedCurrencymap as Map<string[], string>,
     );
 
-    this._headers = headersarr; // This should now be an array of header objects
+    this._headers = headersArr; // This should now be an array of header objects
   }
 
-  async getData(link: string): Promise<GetDataResult> {
+  async getData(link: string): Promise<ResultData> {
     try {
-      if (typeof link !== 'string')
+      if (typeof link !== 'string') {
         throw new Error('Link is not provided in the first parameter');
+      }
 
-      const propsData = siteProps(link, this._webprops);
+      if (link === '') {
+        throw new Error('Link is empty');
+      }
+
+      const propsData = siteProps(link, this._webProps);
 
       if (isErrorProps(propsData)) {
-        throw new Error(propsData.ErrorMsg);
+        throw new Error(propsData.errorMsg);
       }
 
       const { data } = await axios.get(propsData.link, {
@@ -93,43 +98,65 @@ export class EshopScraper {
       });
       clearTimeout(this._timeout);
 
-      const dom = new JSDOM(data);
+      let dom;
+      try {
+        dom = new JSDOM(data);
+      } catch (domError) {
+        if (
+          domError instanceof Error &&
+          domError.message.includes('Could not parse CSS stylesheet')
+        ) {
+          console.warn('Warning: Could not parse CSS stylesheet');
+        } else {
+          throw domError; // Re-throw if it's a different error
+        }
+      }
+
       const priceElement = propsData.selectors.priceSelector
         ? $(dom, propsData.selectors.priceSelector)
         : null;
-      if (!priceElement) throw new Error('Unable to get the product price');
 
-      const raw_string = priceElement.textContent!.toLowerCase().trim();
+      const raw_string = priceElement
+        ? priceElement.textContent!.toLowerCase().trim()
+        : 'Unable to get the product price';
 
       const { price, currency: currencyRaw } =
-        separator(raw_string, this._replaceobj) ?? {};
-      const currency = setCurrency(
-        currencyRaw,
-        this._currencymap,
-      )?.toUpperCase();
+        separator(raw_string, this._replaceObj) ?? {};
+
+      const currency =
+        setCurrency(currencyRaw, this._currencyMap)?.toUpperCase() ||
+        'Unable to get the currency';
 
       const nameElement = $(dom, propsData.selectors.nameSelector);
-      if (!nameElement) throw new Error('Unable to get the product name');
-      const name = titleCase(nameElement.textContent!.trim());
+
+      const name = nameElement
+        ? titleCase(nameElement.textContent!.trim())
+        : 'Unable to get the product name';
 
       return {
+        isError: false,
         price,
         currency,
         name,
         site: propsData.site,
         link,
       };
-    } catch (err: unknown) {
-      if (err instanceof Error) {
+    } catch (err: any) {
+      if (axios.isAxiosError(err)) {
+        return {
+          isError: true,
+          errorMsg: `Request failed with status code ${err.response?.status}: ${err.response?.statusText}`,
+        };
+      } else if (err instanceof Error) {
         if (err.message === 'canceled') err.message = 'Request took too long';
         return {
-          IsError: true,
-          ErrorMsg: err.message,
+          isError: true,
+          errorMsg: err.message,
         };
       }
       return {
-        IsError: true,
-        ErrorMsg: 'An unknown error occurred',
+        isError: true,
+        errorMsg: 'An unknown error occurred',
       };
     }
   }

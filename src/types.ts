@@ -10,8 +10,6 @@ export interface DOM {
   };
 }
 
-export type KeyValPair = [string | string[], string];
-
 export interface SiteProps {
   site: string;
   selectors: {
@@ -22,33 +20,39 @@ export interface SiteProps {
   link: string;
 }
 
-export interface WebProps {
-  get(
-    domain: string,
-  ):
-    | { site: string; selector: { price: string[]; name: string[] } }
-    | undefined;
-}
-
-export type WebsitesPropsType = Map<
+export type WebsitesProps = Map<
   string,
   { site: string; selector: { price: string[]; name: string[] } }
 >;
 
 export interface EshopScraperOptions {
   timeout?: number;
-  webprops?: WebProps | WebProps;
-  replaceobj?: ReplaceMap;
-  currencymap?: Map<string, string>;
-  headersarr?: { [key: string]: string }[]; // Ensure this is an array of header objects
+  webProps?: WebsitesProps;
+  replaceObj?: ReplaceMap;
+  currencyMap?: Map<string, string>;
+  headersArr?: { [key: string]: string }[]; // Ensure this is an array of header objects
 }
 
-export interface GetDataResult {
+export interface ResultData {
+  site?: string;
+  name?: string;
   price?: number;
   currency?: string;
-  name?: string;
-  site?: string;
   link?: string;
-  IsError?: boolean;
-  ErrorMsg?: string;
+  isError: boolean;
+  errorMsg?: string;
+}
+
+export interface Data {
+  isError: true;
+  site: string;
+  name: string;
+  price: number;
+  currency: string;
+  link: string;
+}
+
+export interface Error {
+  isError: false;
+  errorMsg: string;
 }
