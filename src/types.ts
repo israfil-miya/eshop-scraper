@@ -1,5 +1,3 @@
-// types.ts
-
 export interface ReplaceMap {
   [key: string]: string;
 }
@@ -30,7 +28,7 @@ export interface EshopScraperOptions {
   webProps?: WebsitesProps;
   replaceObj?: ReplaceMap;
   currencyMap?: Map<string, string>;
-  headersArr?: { [key: string]: string }[]; // Ensure this is an array of header objects
+  headersArr?: { [key: string]: string }[];
 }
 
 export interface ResultData {
