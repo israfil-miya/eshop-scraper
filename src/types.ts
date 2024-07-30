@@ -29,7 +29,7 @@ export interface EshopScraperOptions {
   timeout?: number;
   webProps?: WebsitesProps;
   replaceObj?: ReplaceMap;
-  currencyMap?: Map<string, string>;
+  currencyMap?: Map<string[], string>;
   headersArr?: { [key: string]: string }[]; // Ensure this is an array of header objects
 }
 

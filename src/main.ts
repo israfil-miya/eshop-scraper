@@ -10,7 +10,6 @@ import {
   siteProps,
   mergeMaps,
   isErrorProps,
-  convertMapToArrayKeys,
 } from './utils';
 
 import randomHeaders from './configs/headers';
@@ -41,7 +40,7 @@ export class EshopScraper {
     webProps,
     replaceObj,
     currencyMap,
-    headersArr = randomHeaders, // Default to randomHeaders if none provided
+    headersArr = randomHeaders,
   }: EshopScraperOptions = {}) {
     this._timeoutAmount = timeout * 1000;
     this._timeout = setTimeout(() => {
@@ -57,22 +56,12 @@ export class EshopScraper {
       ? { ...replaceString, ...replaceObj }
       : replaceString;
 
-    // Convert currencymap to Map<string[], string> if it's Map<string, string>
-    const processedCurrencymap =
+    this._currencyMap =
       currencyMap instanceof Map
-        ? (currencyMap as Map<string, string>).size > 0 &&
-          typeof Array.from(currencyMap.keys())[0] === 'string'
-          ? convertMapToArrayKeys(currencyMap as Map<string, string>)
-          : currencyMap
+        ? mergeMaps(currencyLookupMapping, currencyMap)
         : currencyLookupMapping;
 
-    // Ensure currencymap is of type Map<string[], string>
-    this._currencyMap = mergeMaps<string[], string>(
-      currencyLookupMapping,
-      processedCurrencymap as Map<string[], string>,
-    );
-
-    this._headers = headersArr; // This should now be an array of header objects
+    this._headers = headersArr;
   }
 
   async getData(link: string): Promise<ResultData> {

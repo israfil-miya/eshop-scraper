@@ -131,13 +131,3 @@ export const isErrorProps = (
 ): data is { isError: boolean; errorMsg: string } => {
   return (data as { isError: boolean; errorMsg: string }).isError !== undefined;
 };
-
-export const convertMapToArrayKeys = (
-  map: Map<string, string>,
-): Map<string[], string> => {
-  const result = new Map<string[], string>();
-  map.forEach((value, key) => {
-    result.set([key], value); // Wrap key in an array
-  });
-  return result;
-};
