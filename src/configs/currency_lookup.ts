@@ -11,5 +11,4 @@ const currencyLookupMapping: Map<string[], string> = new Map([
   [['chf', 'swiss franc'], 'CHF'],
 ]);
 
-
-export default currencyLookupMapping
+export default currencyLookupMapping;
