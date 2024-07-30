@@ -1,5 +1,3 @@
-// types.ts
-
 export interface ReplaceMap {
   [key: string]: string;
 }
