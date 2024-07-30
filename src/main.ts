@@ -18,29 +18,16 @@ import replaceString from './configs/replace_string';
 import websitesProps from './configs/websites_props';
 import currencyLookupMapping from './configs/currency_lookup';
 
-import { ReplaceMap, WebProps } from './types';
+import {
+  ReplaceMap,
+  WebProps,
+  EshopScraperOptions,
+  GetDataResult,
+} from './types';
 
 const abortController: AbortController = new AbortController();
 
-interface EshopScraperOptions {
-  timeout?: number;
-  webprops?: WebProps | WebProps;
-  replaceobj?: ReplaceMap;
-  currencymap?: Map<string, string>;
-  headersarr?: { [key: string]: string }[]; // Ensure this is an array of header objects
-}
-
-interface GetDataResult {
-  price?: number;
-  currency?: string;
-  name?: string;
-  site?: string;
-  link?: string;
-  IsError?: boolean;
-  ErrorMsg?: string;
-}
-
-class EshopScraper {
+export class EshopScraper {
   private _timeoutAmount: number;
   private _timeout: NodeJS.Timeout;
   private _webprops: WebProps;
@@ -147,5 +134,3 @@ class EshopScraper {
     }
   }
 }
-
-export default EshopScraper;
