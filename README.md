@@ -1,6 +1,7 @@
 # Eshop Scraper (eshop-scraper)
 
 **Eshop Scraper is a npm package.**
+
 ```console
 npm i eshop-scraper
 ```
@@ -23,20 +24,20 @@ This package can be used for getting some important data like **price, currency,
 ### Create a instance of eshop-scraper class
 
 ```js
-import eshop_scraper from 'eshop-scraper'
-const scraper = new eshop_scraper()
+import eshop_scraper from 'eshop-scraper';
+const scraper = new eshop_scraper();
 ```
 
 ### Use `.getData()` method of the class to scrape
 
 ```js
-import eshop_scraper from 'eshop-scraper'
+import eshop_scraper from 'eshop-scraper';
 const scraper = new eshop_scraper();
 
 (async () => {
-    let res = await scraper.getData('https://www.test.com/product/355223235')
-    console.log(res)
-})()
+  let res = await scraper.getData('https://www.test.com/product/355223235');
+  console.log(res);
+})();
 ```
 
 ## .getData()
@@ -49,7 +50,7 @@ The method takes a single parameter.<br/>
 Pass the absolute uri of the item you want to scrape inside the function.
 
 ```js
-scraper.getData(uri)
+scraper.getData(uri);
 ```
 
 ### Output
@@ -77,7 +78,7 @@ Pass new configs inside the class to config some extra things. It's optional bec
 You can insert new entries in the scraper, then you can scrape items from that website just like the default entries.
 
 ```js
-import eshop_scraper from 'eshop-scraper'
+import eshop_scraper from 'eshop-scraper';
 
 // create a map with new entries
 const propsList = new Map([
@@ -92,13 +93,13 @@ const propsList = new Map([
     },
   ],
   // follow the same structure and add many more sites, inside the map
-])
+]);
 
 const config = {
   webprops: propsList, // pass a map with new entries in webprops
-}
+};
 
-const scraper = new eshop_scraper(config)
+const scraper = new eshop_scraper(config);
 ```
 
 ### Replace or exclude extra things
@@ -106,19 +107,19 @@ const scraper = new eshop_scraper(config)
 Exclude extra things to make the scraper work. The scraper needs to get a string like "\$50.30" or "USD 40" or "30 \$" from the price selector.
 
 ```js
-import eshop_scraper from 'eshop-scraper'
+import eshop_scraper from 'eshop-scraper';
 
 const obj = {
   'price is:': '', // pass empty string to exclude
   now: '',
   usd: '$', // replace one string with another
-}
+};
 
 const config = {
   replaceobj: obj, // pass an object in replaceobj
-}
+};
 
-const scraper = new eshop_scraper(config)
+const scraper = new eshop_scraper(config);
 ```
 
 ### Insert new currencies
@@ -126,20 +127,20 @@ const scraper = new eshop_scraper(config)
 Some websites may show prices in bitcoin or some unknown currency, to show them in proper way you need to map them. Otherwise you will get `undefined` in `currency` output.
 
 ```js
-import eshop_scraper from 'eshop-scraper'
+import eshop_scraper from 'eshop-scraper';
 
 // create a map with new currencies
 const currencyList = new Map([
-    ['$', 'USD'],
-    [['euro', '€'], 'EUR'], // to map multiple strings to one currency put the strings inside an array
+  ['$', 'USD'],
+  [['euro', '€'], 'EUR'], // to map multiple strings to one currency put the strings inside an array
   // follow the same structure and add many more currencies, inside the map
-])
+]);
 
 const config = {
   currencymap: currencyList, // pass a map with new currency entries in currencymap
-}
+};
 
-const scraper = new eshop_scraper(config)
+const scraper = new eshop_scraper(config);
 ```
 
 ### Insert new set of headers
@@ -147,7 +148,7 @@ const scraper = new eshop_scraper(config)
 To make the scraper look realistic and prevent the website from blocking the ip, realistic headers are need to be set.
 
 ```js
-import eshop_scraper from 'eshop-scraper'
+import eshop_scraper from 'eshop-scraper';
 
 const newheaders = [
   {
@@ -163,13 +164,13 @@ const newheaders = [
       'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:90.0) Gecko/20100101 Firefox/90.0',
   },
   // add many more headers inside the array
-]
+];
 
 const config = {
   headersarr: newheaders, // pass a arrray with new set of headers in headersarr
-}
+};
 
-const scraper = new eshop_scraper(config)
+const scraper = new eshop_scraper(config);
 ```
 
 ### Set timeout
@@ -177,13 +178,13 @@ const scraper = new eshop_scraper(config)
 If the request takes longer time than the set amount of time and the website doesn't response within that time then the request will be cancelled.
 
 ```js
-import eshop_scraper from 'eshop-scraper'
+import eshop_scraper from 'eshop-scraper';
 
 const config = {
   timeout: 10, // pass an integer in timeout (counted as second)
-}
+};
 
-const scraper = new eshop_scraper(config)
+const scraper = new eshop_scraper(config);
 ```
 
 ## Check default values
@@ -191,23 +192,23 @@ const scraper = new eshop_scraper(config)
 Use these only to check default valuess, directly replacing values with new values not recommended.
 
 ```js
-import eshop_scraper from 'eshop-scraper'
+import eshop_scraper from 'eshop-scraper';
 const scraper = new eshop_scraper();
 (async () => {
-  let defProps = scraper._webprops // default supported websites
-  let defReplaceStrings = scraper._replaceobj // default replaced strings
-  let defHeaders = scraper._headers // default set of headers
-  let defTimeout = scraper._timeoutAmount // default timeout amount
-  let defCurrencyMap = scraper._currencymap // default currency map
+  let defProps = scraper._webprops; // default supported websites
+  let defReplaceStrings = scraper._replaceobj; // default replaced strings
+  let defHeaders = scraper._headers; // default set of headers
+  let defTimeout = scraper._timeoutAmount; // default timeout amount
+  let defCurrencyMap = scraper._currencymap; // default currency map
 
-  console.log("Supported websites:", defProps, "\n")
-  console.log("Replaced strings:", defReplaceStrings, "\n")
-  console.log("Headers:", defHeaders, "\n")
-  console.log("Currency map:", defCurrencyMap, "\n")
-  console.log("Timeout amount:", defTimeout, "\n")
+  console.log('Supported websites:', defProps, '\n');
+  console.log('Replaced strings:', defReplaceStrings, '\n');
+  console.log('Headers:', defHeaders, '\n');
+  console.log('Currency map:', defCurrencyMap, '\n');
+  console.log('Timeout amount:', defTimeout, '\n');
 
-  process.exit(0)
-})()
+  process.exit(0);
+})();
 ```
 
 ## Supported websites
