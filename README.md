@@ -192,10 +192,10 @@ import { EshopScraper } from 'eshop-scraper';
 const scraper = new EshopScraper();
 
 (async () => {
-  console.log('Supported websites:', scraper._webprops);
-  console.log('Replaced strings:', scraper._replaceobj);
+  console.log('Supported websites:', scraper._webProps);
+  console.log('Replaced strings:', scraper._replaceObj);
   console.log('Headers:', scraper._headers);
-  console.log('Currency map:', scraper._currencymap);
+  console.log('Currency map:', scraper._currencyMap);
   console.log('Timeout amount:', scraper._timeoutAmount);
 
   process.exit(0);

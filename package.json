@@ -1,7 +1,7 @@
 {
   "name": "eshop-scraper",
   "version": "1.4.0",
-  "description": "A simple package to get some data from a e-shop using web-scraping",
+  "description": "A powerful npm package designed for web scraping e-commerce websites.",
   "module": "dist/index.js",
   "main": "dist/index.cjs",
   "typings": "dist/index.d.ts",
@@ -11,8 +11,8 @@
   },
   "type": "module",
   "engines": {
-    "node": ">=16.16.0",
-    "npm": ">=8.11.0"
+    "node": ">=20.11.0",
+    "npm": ">=10.2.4"
   },
   "author": "MD. Israfil Miya",
   "license": "MIT",
@@ -21,26 +21,24 @@
     "jsdom": "^20.0.3"
   },
   "bugs": {
-    "url": "https://github.com/GitPro10/eshop-scraper/issues"
+    "url": "https://github.com/israfil-miya/eshop-scraper/issues"
   },
-  "homepage": "https://github.com/GitPro10/eshop-scraper#readme",
+  "homepage": "https://github.com/israfil-miya/eshop-scraper#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/GitPro10/eshop-scraper.git"
+    "url": "https://github.com/israfil-miya/eshop-scraper.git"
   },
   "keywords": [
     "price finder",
-    "web scrap",
-    "eshop",
-    "etsy",
+    "e-commerce",
+    "scraper",
+    "shop",
     "amazon",
-    "nintendo",
-    "walmart",
     "price fetcher",
-    "data fetcher",
-    "website data fetcher",
-    "e-shop",
-    "price tracker"
+    "amazon",
+    "steam",
+    "ebay",
+    "bikroy"
   ],
   "devDependencies": {
     "@types/jsdom": "^21.1.7",
