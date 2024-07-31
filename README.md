@@ -42,8 +42,8 @@ const scraper: EshopScraper = new EshopScraper({
 });
 ```
 
-### Use `.getData()` Method to Scrape Data
-Call the `.getData()` method to scrape data from the provided URL:
+### Use `getData` Method to Scrape Data
+Call the `getData` method to scrape data from the provided URL:
 
 ```ts
 import { EshopScraper, ResultData } from 'eshop-scraper';
