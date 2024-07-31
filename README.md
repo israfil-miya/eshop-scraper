@@ -137,7 +137,7 @@ scraper.updateWebProps(['site1.com', 'site2.com'], [
 ]);
 ```
 
-### deleteWebProps
+### `deleteWebProps`
 Deletes entries from the `_webProps.`
 
 #### Parameters:
