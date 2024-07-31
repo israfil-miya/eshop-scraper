@@ -67,7 +67,7 @@ const scraper = new EshopScraper({
 })();
 ```
 
-### `.getData()`
+## `.getData()`
 This method scrapes data from a website based on the provided configuration.
 
 ### Parameters
