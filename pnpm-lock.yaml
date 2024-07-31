@@ -8,6 +8,9 @@ dependencies:
   axios:
     specifier: ^0.26.1
     version: 0.26.1
+  axios-retry:
+    specifier: ^4.4.2
+    version: 4.4.2(axios@0.26.1)
   jsdom:
     specifier: ^20.0.3
     version: 20.0.3
@@ -749,6 +752,18 @@ packages:
       }
     dev: false
 
+  /axios-retry@4.4.2(axios@0.26.1):
+    resolution:
+      {
+        integrity: sha512-2fjo9uDNBQjX8+GMEGOFG5TrLMZ3QijjeRYcgBI2MhrsabnvcIAfLxxIhG7+CCD68vPEQY3IM2llV70ZsrqPvA==,
+      }
+    peerDependencies:
+      axios: 0.x || 1.x
+    dependencies:
+      axios: 0.26.1
+      is-retry-allowed: 2.2.0
+    dev: false
+
   /axios@0.26.1:
     resolution:
       {
@@ -1335,6 +1350,14 @@ packages:
       {
         integrity: sha512-bCYeRA2rVibKZd+s2625gGnGF/t7DSqDs4dP7CrLA1m7jKWz6pps0LpYLJN8Q64HtmPKJ1hrN3nzPNKFEKOUiQ==,
       }
+    dev: false
+
+  /is-retry-allowed@2.2.0:
+    resolution:
+      {
+        integrity: sha512-XVm7LOeLpTW4jV19QSH38vkswxoLud8sQ57YwJVTPWdiaI9I8keEhGFpBlslyVsgdQy4Opg8QOLb8YRgsyZiQg==,
+      }
+    engines: { node: '>=10' }
     dev: false
 
   /is-stream@2.0.1:

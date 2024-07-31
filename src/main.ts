@@ -1,4 +1,5 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
+import axiosRetry from 'axios-retry';
 import { JSDOM } from 'jsdom';
 
 import {
@@ -24,15 +25,18 @@ import {
   ResultData,
 } from './types';
 
-const abortController: AbortController = new AbortController();
+// for update and delete methods
+import { Error as Result } from './types';
 
 export class EshopScraper {
   readonly _timeoutAmount: number;
-  readonly _timeout: NodeJS.Timeout;
   readonly _webProps: WebsitesProps;
   readonly _replaceObj: ReplaceMap;
   readonly _currencyMap: Map<string[], string>;
   readonly _headers: { [key: string]: string }[];
+  readonly _retry: number;
+  private _abortController: AbortController;
+  private _timeout: NodeJS.Timeout | undefined;
 
   // Constructor
   constructor({
@@ -41,11 +45,10 @@ export class EshopScraper {
     replaceObj,
     currencyMap,
     headersArr = randomHeaders,
+    retry = 2,
   }: EshopScraperOptions = {}) {
     this._timeoutAmount = timeout * 1000;
-    this._timeout = setTimeout(() => {
-      abortController.abort();
-    }, this._timeoutAmount);
+    this._abortController = new AbortController();
 
     this._webProps =
       webProps instanceof Map
@@ -62,8 +65,44 @@ export class EshopScraper {
         : currencyLookupMapping;
 
     this._headers = headersArr;
+    this._retry = retry;
+
+    // Apply axios-retry to axios instance
+    axiosRetry(axios, {
+      retries: this._retry,
+      retryCondition: (error: AxiosError) => {
+        if (axiosRetry.isNetworkOrIdempotentRequestError(error)) {
+          return true; // Retry on network or idempotent request errors
+        }
+
+        // Handle specific status codes
+        if (error.response) {
+          const status = error.response.status;
+          if (status === 403) {
+            return false; // Do not retry on forbidden errors
+          }
+          if (status === 429 || status >= 500) {
+            return true; // Retry on rate limiting (429) or server errors (500+)
+          }
+        }
+
+        return false; // Default: Do not retry for other cases
+      },
+      retryDelay: retryCount => {
+        return retryCount * 1000; // Exponential backoff
+      },
+    });
   }
 
+  private clearTimeouts() {
+    if (this._timeout) {
+      clearTimeout(this._timeout);
+      this._timeout = undefined;
+    }
+    this._abortController.abort();
+  }
+
+  // Method to get data
   async getData(link: string): Promise<ResultData> {
     try {
       if (typeof link !== 'string') {
@@ -80,26 +119,21 @@ export class EshopScraper {
         throw new Error(propsData.errorMsg);
       }
 
+      this._timeout = setTimeout(() => {
+        this._abortController.abort();
+      }, this._timeoutAmount);
+
       const { data } = await axios.get(propsData.link, {
-        signal: abortController.signal,
+        signal: this._abortController.signal,
         headers: setHeader(this._headers), // Apply random headers
         timeout: this._timeoutAmount,
       });
-      clearTimeout(this._timeout);
+      this.clearTimeouts();
 
-      let dom;
-      try {
-        dom = new JSDOM(data);
-      } catch (domError) {
-        if (
-          domError instanceof Error &&
-          domError.message.includes('Could not parse CSS stylesheet')
-        ) {
-          console.warn('Warning: Could not parse CSS stylesheet');
-        } else {
-          throw domError; // Re-throw if it's a different error
-        }
-      }
+      let dom: JSDOM = new JSDOM(data, {
+        runScripts: 'dangerously',
+        resources: 'usable',
+      });
 
       const priceElement = propsData.selectors.priceSelector
         ? $(dom, propsData.selectors.priceSelector)
@@ -131,6 +165,7 @@ export class EshopScraper {
         link,
       };
     } catch (err: any) {
+      this.clearTimeouts();
       if (axios.isAxiosError(err)) {
         return {
           isError: true,
@@ -151,54 +186,178 @@ export class EshopScraper {
   }
 
   // Methods for _currencyMap
-  updateCurrencyMap(key: string[][] | string[], value: string[] | string): void {
-    const newKey = Array.isArray(key) && Array.isArray(key[0]) ? key : [key];
-    const newValue = Array.isArray(value) ? value.join(', ') : value;
-    newKey.forEach(k => {
-      this._currencyMap.set(k as string[], newValue);
-    });
-  }
+  updateCurrencyMap = (
+    key: string[][] | string[],
+    value: string[] | string,
+  ): Result => {
+    try {
+      const newKey = Array.isArray(key) && Array.isArray(key[0]) ? key : [key];
+      const newValue = Array.isArray(value) ? value : [value];
 
-  deleteCurrencyMap(key: string[][] | string[]): void {
-    const keyToDelete = Array.isArray(key) && Array.isArray(key[0]) ? key : [key];
-    keyToDelete.forEach(k => {
-      this._currencyMap.delete(k as string[]);
-    });
-  }
+      if (newKey.length !== newValue.length) {
+        throw new Error('Keys and values arrays must have the same length.');
+      }
+
+      newKey.forEach((k, index) => {
+        const mapKeys = Array.from(this._currencyMap.keys());
+        const existingKey = mapKeys.find(
+          existingKeys =>
+            existingKeys.length === k.length &&
+            existingKeys.every((val, i) => val === k[i]),
+        );
+        if (existingKey) {
+          this._currencyMap.set(existingKey, newValue[index] || '');
+        } else {
+          console.log(`Key ${k} does not exist in the currency map.`);
+        }
+      });
+
+      return { isError: false };
+    } catch (error) {
+      return {
+        isError: true,
+        errorMsg: 'Error updating currency map: ' + (error as Error).message,
+      };
+    }
+  };
+
+  deleteCurrencyMap = (key: string[][] | string[]): Result => {
+    try {
+      const keysToDelete =
+        Array.isArray(key) && Array.isArray(key[0]) ? key : [key];
+
+      keysToDelete.forEach(k => {
+        const mapKeys = Array.from(this._currencyMap.keys());
+        const keyToDelete = mapKeys.find(
+          existingKeys =>
+            existingKeys.length === k.length &&
+            existingKeys.every((val, i) => val === k[i]),
+        );
+
+        if (keyToDelete) {
+          this._currencyMap.delete(keyToDelete);
+        } else {
+          console.log(`Key ${k} does not exist in the currency map.`);
+        }
+      });
+
+      return { isError: false };
+    } catch (error) {
+      return {
+        isError: true,
+        errorMsg:
+          'Error deleting from currency map: ' + (error as Error).message,
+      };
+    }
+  };
 
   // Methods for _replaceObj
-  updateReplaceObj(key: string | string[], value: string | string[]): void {
-    const newKey = Array.isArray(key) ? key : [key];
-    const newValue = Array.isArray(value) ? value : [value];
+  updateReplaceObj = (
+    key: string | string[],
+    value: string | string[],
+  ): Result => {
+    try {
+      const newKey = Array.isArray(key) ? key : [key];
+      const newValue = Array.isArray(value) ? value : [value];
 
-    newKey.forEach((key, index) => {
-      this._replaceObj[key] = newValue[index] || '';
-    });
-  }
+      if (newKey.length !== newValue.length) {
+        throw new Error('Keys and values arrays must have the same length.');
+      }
 
-  deleteReplaceObj(key: string | string[]): void {
-    const keyToDelete = Array.isArray(key) ? key : [key];
+      newKey.forEach((k, index) => {
+        if (this._replaceObj.hasOwnProperty(k)) {
+          this._replaceObj[k] = newValue[index] || '';
+        } else {
+          console.log(`Key "${k}" does not exist in the replace object.`);
+        }
+      });
 
-    keyToDelete.forEach(key => {
-      delete this._replaceObj[key];
-    });
-  }
+      return { isError: false };
+    } catch (error) {
+      return {
+        isError: true,
+        errorMsg: 'Error updating replace object: ' + (error as Error).message,
+      };
+    }
+  };
+
+  deleteReplaceObj = (key: string | string[]): Result => {
+    try {
+      const keysToDelete = Array.isArray(key) ? key : [key];
+
+      keysToDelete.forEach(k => {
+        if (this._replaceObj.hasOwnProperty(k)) {
+          delete this._replaceObj[k];
+        } else {
+          console.log(`Key "${k}" does not exist in the replace object.`);
+        }
+      });
+
+      return { isError: false };
+    } catch (error) {
+      return {
+        isError: true,
+        errorMsg:
+          'Error deleting from replace object: ' + (error as Error).message,
+      };
+    }
+  };
 
   // Methods for _webProps
-  updateWebProps(site: string | string[], properties: { site: string; selector: { price: string[]; name: string[] } } | { site: string; selector: { price: string[]; name: string[] } }[]): void {
-    const newSite = Array.isArray(site) ? site : [site];
-    const newProperties = Array.isArray(properties) ? properties : [properties];
+  updateWebProps = (
+    site: string | string[],
+    properties:
+      | { site: string; selector: { price: string[]; name: string[] } }
+      | { site: string; selector: { price: string[]; name: string[] } }[],
+  ): Result => {
+    try {
+      const newSite = Array.isArray(site) ? site : [site];
+      const newProperties = Array.isArray(properties)
+        ? properties
+        : [properties];
 
-    newSite.forEach((site, index) => {
-      this._webProps.set(site, newProperties[index]);
-    });
-  }
+      if (newSite.length !== newProperties.length) {
+        throw new Error(
+          'Sites and properties arrays must have the same length.',
+        );
+      }
 
-  deleteWebProps(site: string | string[]): void {
-    const siteToDelete = Array.isArray(site) ? site : [site];
+      newSite.forEach((s, index) => {
+        if (this._webProps.has(s)) {
+          this._webProps.set(s, newProperties[index]);
+        } else {
+          console.log(`Site "${s}" does not exist in web properties.`);
+        }
+      });
 
-    siteToDelete.forEach(site => {
-      this._webProps.delete(site);
-    });
-  }
+      return { isError: false };
+    } catch (error) {
+      return {
+        isError: true,
+        errorMsg: 'Error updating web properties: ' + (error as Error).message,
+      };
+    }
+  };
+
+  deleteWebProps = (site: string | string[]): Result => {
+    try {
+      const sitesToDelete = Array.isArray(site) ? site : [site];
+
+      sitesToDelete.forEach(s => {
+        if (this._webProps.has(s)) {
+          this._webProps.delete(s);
+        } else {
+          console.log(`Site "${s}" does not exist in web properties.`);
+        }
+      });
+
+      return { isError: false };
+    } catch (error) {
+      return {
+        isError: true,
+        errorMsg:
+          'Error deleting from web properties: ' + (error as Error).message,
+      };
+    }
+  };
 }

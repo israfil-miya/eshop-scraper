@@ -28,7 +28,8 @@ export interface EshopScraperOptions {
   webProps?: WebsitesProps;
   replaceObj?: ReplaceMap;
   currencyMap?: Map<string[], string>;
-  headersArr?: { [key: string]: string }[]; // Ensure this is an array of header objects
+  headersArr?: { [key: string]: string }[];
+  retry?: number;
 }
 
 export interface ResultData {
@@ -42,7 +43,7 @@ export interface ResultData {
 }
 
 export interface Data {
-  isError: true;
+  isError: boolean;
   site: string;
   name: string;
   price: number;
@@ -51,6 +52,6 @@ export interface Data {
 }
 
 export interface Error {
-  isError: false;
-  errorMsg: string;
+  isError: boolean;
+  errorMsg?: string;
 }

@@ -264,6 +264,17 @@ const scraper = new EshopScraper({
 });
 ```
 
+### Set Retry Attempts
+Configure the number of retry attempts for failed requests:
+
+```ts
+import { EshopScraper } from 'eshop-scraper';
+
+const scraper = new EshopScraper({
+  retry: 3, // Number of retry attempts
+});
+```
+
 ## Check Default Values
 Use this script to inspect default values for supported websites, replaced strings, headers, and more:
 
@@ -278,6 +289,7 @@ const scraper = new EshopScraper();
   console.log('Headers:', scraper._headers);
   console.log('Currency map:', scraper._currencyMap);
   console.log('Timeout amount:', scraper._timeoutAmount);
+  console.log('Retry attempts:', scraper._retry);
 
   process.exit(0);
 })();
