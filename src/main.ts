@@ -149,4 +149,56 @@ export class EshopScraper {
       };
     }
   }
+
+  // Methods for _currencyMap
+  updateCurrencyMap(key: string[][] | string[], value: string[] | string): void {
+    const newKey = Array.isArray(key) && Array.isArray(key[0]) ? key : [key];
+    const newValue = Array.isArray(value) ? value.join(', ') : value;
+    newKey.forEach(k => {
+      this._currencyMap.set(k as string[], newValue);
+    });
+  }
+
+  deleteCurrencyMap(key: string[][] | string[]): void {
+    const keyToDelete = Array.isArray(key) && Array.isArray(key[0]) ? key : [key];
+    keyToDelete.forEach(k => {
+      this._currencyMap.delete(k as string[]);
+    });
+  }
+
+  // Methods for _replaceObj
+  updateReplaceObj(key: string | string[], value: string | string[]): void {
+    const newKey = Array.isArray(key) ? key : [key];
+    const newValue = Array.isArray(value) ? value : [value];
+
+    newKey.forEach((key, index) => {
+      this._replaceObj[key] = newValue[index] || '';
+    });
+  }
+
+  deleteReplaceObj(key: string | string[]): void {
+    const keyToDelete = Array.isArray(key) ? key : [key];
+
+    keyToDelete.forEach(key => {
+      delete this._replaceObj[key];
+    });
+  }
+
+  // Methods for _webProps
+  updateWebProps(site: string | string[], properties: { site: string; selector: { price: string[]; name: string[] } } | { site: string; selector: { price: string[]; name: string[] } }[]): void {
+    const newSite = Array.isArray(site) ? site : [site];
+    const newProperties = Array.isArray(properties) ? properties : [properties];
+
+    newSite.forEach((site, index) => {
+      this._webProps.set(site, newProperties[index]);
+    });
+  }
+
+  deleteWebProps(site: string | string[]): void {
+    const siteToDelete = Array.isArray(site) ? site : [site];
+
+    siteToDelete.forEach(site => {
+      this._webProps.delete(site);
+    });
+  }
 }

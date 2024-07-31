@@ -67,18 +67,21 @@ const scraper = new EshopScraper({
 })();
 ```
 
-## `.getData()`
+## Methods
+
+### `.getData()`
 This method scrapes data from a website based on the provided configuration.
 
-### Parameters
+#### Parameters:
 The method takes a single parameter:
-- `link` (string): The absolute URI of the item you want to scrape.
+- `link: string`: The absolute URI of the item you want to scrape.
 
+#### Usage:
 ```ts
 await scraper.getData(uri);
 ```
 
-### Output
+#### Output:
 It returns a Promise that resolves to an object with the following structure:
 
 ```ts
@@ -91,6 +94,84 @@ It returns a Promise that resolves to an object with the following structure:
   isError?: boolean; // Whether an error occurred
   errorMsg?: string; // The error message, if any
 }
+```
+
+### `updateCurrencyMap`
+Updates entries in the `_currencyMap`.
+
+#### Parameters:
+- `key: string[][] | string[]`: The key(s) to be updated.
+- `value: string[] | string`: The value(s) to be assigned.
+
+#### Usage:
+```ts
+scraper.updateCurrencyMap([['$', 'usd']], 'USD');
+scraper.updateCurrencyMap(['$', 'usd'], 'USD');
+```
+
+### `deleteCurrencyMap`
+Deletes entries from the `_currencyMap`.
+
+#### Parameters:
+- `key: string[][] | string[]`: The key(s) to be deleted.
+
+#### Usage:
+```ts
+scraper.deleteCurrencyMap([['$', 'usd']]);
+scraper.deleteCurrencyMap(['$', 'usd']);
+```
+
+### `updateWebProps`
+Updates entries in the `_webProps`.
+
+#### Parameters:
+- `site: string | string[]`: The site(s) to be updated.
+- `properties: { site: string; selector: { price: string[]; name: string[] } } | { site: string; selector: { price: string[]; name: string[] } }[]`: The properties to be assigned.
+
+#### Usage:
+```ts
+scraper.updateWebProps('exampleSite', { site: 'exampleSite', selector: { price: ['priceSelector'], name: ['nameSelector'] } });
+scraper.updateWebProps(['site1.com', 'site2.com'], [
+  { site: 'site1', selector: { price: ['priceSelector1'], name: ['nameSelector1'] } },
+  { site: 'site2', selector: { price: ['priceSelector2'], name: ['nameSelector2'] } }
+]);
+```
+
+### deleteWebProps
+Deletes entries from the `_webProps.`
+
+#### Parameters:
+- `site: string | string[]`: The site(s) to be deleted.
+
+#### Usage:
+```ts
+scraper.deleteWebProps('exampleSite');
+scraper.deleteWebProps(['site1', 'site2']);
+```
+
+### `updateReplaceObj`
+Updates entries in the `_replaceObj`.
+
+#### Parameters:
+- `key: string | string[]`: The key(s) to be updated.
+- `value: string | string[]`: The value(s) to be assigned.
+
+#### Usage:
+```ts
+scraper.updateReplaceObj('oldString', 'newString');
+scraper.updateReplaceObj(['oldString1', 'oldString2'], ['newString1', 'newString2']);
+```
+
+### `deleteReplaceObj`
+Deletes entries from the `_replaceObj`.
+
+#### Parameters:
+- `key: string | string[]`: The key(s) to be deleted.
+
+#### Usage:
+```ts
+scraper.deleteReplaceObj('oldString');
+scraper.deleteReplaceObj(['oldString1', 'oldString2']);
 ```
 
 ## Configuration
