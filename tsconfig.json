@@ -8,7 +8,9 @@
     "sourceMap": true,
     "removeComments": true,
     "noImplicitAny": false,
-    "declaration": true
+    "declaration": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
   "include": ["src"],
   "exclude": ["node_modules"]

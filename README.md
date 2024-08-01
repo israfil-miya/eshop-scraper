@@ -75,6 +75,7 @@ This method scrapes data from a website based on the provided configuration.
 #### Parameters:
 The method takes a single parameter:
 - `link: string`: The absolute URI of the item you want to scrape.
+- `timeoutAmount?: number`: Timeout amount for the request in seconds.
 
 #### Usage:
 ```ts

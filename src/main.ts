@@ -1,6 +1,8 @@
 import axios, { AxiosError } from 'axios';
-import axiosRetry from 'axios-retry';
 import { JSDOM } from 'jsdom';
+
+// Change to require if axios-retry import is problematic
+const axiosRetry = require('axios-retry').default;
 
 import {
   titleCase,
@@ -35,8 +37,6 @@ export class EshopScraper {
   readonly _currencyMap: Map<string[], string>;
   readonly _headers: { [key: string]: string }[];
   readonly _retry: number;
-  private _abortController: AbortController;
-  private _timeout: NodeJS.Timeout | undefined;
 
   // Constructor
   constructor({
@@ -48,7 +48,6 @@ export class EshopScraper {
     retry = 2,
   }: EshopScraperOptions = {}) {
     this._timeoutAmount = timeout * 1000;
-    this._abortController = new AbortController();
 
     this._webProps =
       webProps instanceof Map
@@ -94,16 +93,18 @@ export class EshopScraper {
     });
   }
 
-  private clearTimeouts() {
-    if (this._timeout) {
-      clearTimeout(this._timeout);
-      this._timeout = undefined;
-    }
-    this._abortController.abort();
-  }
-
   // Method to get data
-  async getData(link: string): Promise<ResultData> {
+  async getData(link: string, timeoutAmount?: number): Promise<ResultData> {
+    const abortController = new AbortController();
+    timeoutAmount =
+      typeof timeoutAmount === 'number'
+        ? timeoutAmount * 1000
+        : this._timeoutAmount;
+
+    const timeout = setTimeout(() => {
+      abortController.abort();
+    }, timeoutAmount);
+
     try {
       if (typeof link !== 'string') {
         throw new Error('Link is not provided in the first parameter');
@@ -119,21 +120,15 @@ export class EshopScraper {
         throw new Error(propsData.errorMsg);
       }
 
-      this._timeout = setTimeout(() => {
-        this._abortController.abort();
-      }, this._timeoutAmount);
-
       const { data } = await axios.get(propsData.link, {
-        signal: this._abortController.signal,
-        headers: setHeader(this._headers), // Apply random headers
+        signal: abortController.signal,
+        headers: setHeader(this._headers),
         timeout: this._timeoutAmount,
       });
-      this.clearTimeouts();
 
-      let dom: JSDOM = new JSDOM(data, {
-        runScripts: 'dangerously',
-        resources: 'usable',
-      });
+      clearTimeout(timeout);
+
+      let dom: JSDOM = new JSDOM(data);
 
       const priceElement = propsData.selectors.priceSelector
         ? $(dom, propsData.selectors.priceSelector)
@@ -165,7 +160,7 @@ export class EshopScraper {
         link,
       };
     } catch (err: any) {
-      this.clearTimeouts();
+      clearTimeout(timeout);
       if (axios.isAxiosError(err)) {
         return {
           isError: true,
